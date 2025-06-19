@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>QuickMeme</title>
+    <style>
+      body {
+        width: 500px;
+        height: 650px;
+        margin: 0;
+        padding: 15px;
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+
+      .header h1 {
+        margin: 0;
+        color: #333;
+        font-size: 20px;
+      }
+
+      .url-section {
+        margin-bottom: 15px;
+      }
+
+      .url-section input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      .url-section button {
+        margin-top: 5px;
+        padding: 8px 15px;
+        background: #007cba;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .url-section button:hover {
+        background: #005a87;
+      }
+
+      .canvas-container {
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        text-align: center;
+        margin-bottom: 15px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #memeCanvas {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 6px;
+      }
+
+      .loading {
+        color: #666;
+        font-style: italic;
+      }
+
+      .controls {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+
+      .control-group {
+        margin-bottom: 12px;
+      }
+
+      .control-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 13px;
+      }
+
+      .control-group input,
+      .control-group select {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 13px;
+      }
+
+      .control-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .control-row > div {
+        flex: 1;
+      }
+
+      .add-text-btn {
+        width: 100%;
+        padding: 10px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 15px;
+      }
+
+      .add-text-btn:hover {
+        background: #218838;
+      }
+
+      .download-btn {
+        width: 100%;
+        padding: 12px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      .download-btn:hover {
+        background: #c82333;
+      }
+
+      .text-item {
+        background: #f8f9fa;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+      }
+
+      .text-item.selected {
+        border-color: #007cba;
+        background: #e7f3ff;
+      }
+
+      .text-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .text-item-title {
+        font-weight: bold;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .delete-text {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 3px 8px;
+        cursor: pointer;
+        font-size: 11px;
+      }
+
+      .delete-text:hover {
+        background: #c82333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🎭 QuickMeme</h1>
+    </div>
+
+    <div class="url-section">
+      <input type="url" id="imageUrl" placeholder="Paste image URL here..." />
+      <button id="loadImage">Load Image</button>
+      <button class="download-btn" id="downloadMeme">Download Meme</button>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="memeCanvas" style="display: none"></canvas>
+      <div id="loadingText" class="loading">
+        Load an image to start creating memes!
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="add-text-btn" id="addText">+ Add Text</button>
+
+      <div id="textEditor" style="display: none">
+        <div class="control-group">
+          <label>Text:</label>
+          <input type="text" id="editorText" />
+        </div>
+
+        <div class="control-group">
+          <button id="deleteTextBtn" class="delete-text">
+            🗑️ Delete This Text
+          </button>
+
+          <label>Font:</label>
+          <select id="editorFontFamily">
+            <option value="Impact, Arial Black, sans-serif">Impact</option>
+            <option value="Comic Sans MS, cursive, sans-serif">
+              Comic Sans
+            </option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Courier New, monospace">Courier New</option>
+          </select>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group">
+            <label>Size:</label>
+            <input type="range" min="12" max="80" id="editorFontSize" />
+          </div>
+          <div class="control-group">
+            <label>Color:</label>
+            <input type="color" id="editorFill" />
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group">
+            <label>Outline:</label>
+            <input type="color" id="editorStroke" />
+          </div>
+          <div class="control-group">
+            <label>Outline Width:</label>
+            <input type="range" min="0" max="5" id="editorStrokeWidth" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
