@@ -1,105 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <title>QuickMeme</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         width: 500px;
         height: 650px;
         margin: 0;
-        padding: 15px;
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
+        padding: 16px;
+        font-family: "Inter", sans-serif;
+        background-color: #0f0f0f;
+        color: #e4e4e7;
       }
 
       .header {
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
       }
 
       .header h1 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fafafa;
         margin: 0;
-        color: #333;
-        font-size: 20px;
       }
 
-      .url-section {
-        margin-bottom: 15px;
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
       }
 
-      .url-section input {
-        width: 100%;
+      .toolbar input[type="url"] {
+        flex: 1;
+        background-color: #1e1e1e;
+        border: 1px solid #3f3f46;
+        color: #e4e4e7;
+        border-radius: 6px;
         padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
         font-size: 14px;
       }
 
-      .url-section button {
-        margin-top: 5px;
-        padding: 8px 15px;
-        background: #007cba;
-        color: white;
+      .toolbar button {
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        background-color: #e4e4e7;
+        color: #1e1e1e;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
         cursor: pointer;
-        font-size: 14px;
+        transition: background-color 0.2s ease;
       }
 
-      .url-section button:hover {
-        background: #005a87;
+      .toolbar button:hover {
+        background-color: #cfcfd0;
       }
 
       .canvas-container {
-        border: 2px solid #ddd;
+        background-color: #18181b;
+        border: 1px solid #3f3f46;
         border-radius: 8px;
-        background: white;
-        text-align: center;
-        margin-bottom: 15px;
-        min-height: 300px;
+        height: 300px;
         display: flex;
         align-items: center;
         justify-content: center;
+        margin-bottom: 12px;
       }
 
       #memeCanvas {
         max-width: 100%;
-        max-height: 300px;
-        border-radius: 6px;
+        max-height: 100%;
+        display: block;
+        border-radius: 4px;
       }
 
       .loading {
-        color: #666;
+        color: #a1a1aa;
         font-style: italic;
+        font-size: 14px;
       }
 
       .controls {
-        background: white;
-        padding: 15px;
+        background-color: #18181b;
+        border: 1px solid #3f3f46;
+        padding: 12px;
         border-radius: 8px;
-        border: 1px solid #ddd;
       }
 
       .control-group {
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       .control-group label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #333;
         font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        display: block;
+        color: #e4e4e7;
       }
 
       .control-group input,
       .control-group select {
         width: 100%;
         padding: 6px;
-        border: 1px solid #ddd;
-        border-radius: 3px;
         font-size: 13px;
+        background-color: #1e1e1e;
+        color: #e4e4e7;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
       }
 
       .control-row {
@@ -107,93 +121,39 @@
         gap: 10px;
       }
 
-      .control-row > div {
+      .control-row > .control-group {
         flex: 1;
       }
 
-      .add-text-btn {
-        width: 100%;
-        padding: 10px;
-        background: #28a745;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        margin-bottom: 15px;
-      }
-
-      .add-text-btn:hover {
-        background: #218838;
-      }
-
-      .download-btn {
-        width: 100%;
-        padding: 12px;
-        background: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-      }
-
-      .download-btn:hover {
-        background: #c82333;
-      }
-
-      .text-item {
-        background: #f8f9fa;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-        border: 1px solid #e9ecef;
-      }
-
-      .text-item.selected {
-        border-color: #007cba;
-        background: #e7f3ff;
-      }
-
-      .text-item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-      }
-
-      .text-item-title {
-        font-weight: bold;
-        font-size: 12px;
-        color: #666;
-      }
-
       .delete-text {
-        background: #dc3545;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #dc2626;
         color: white;
         border: none;
-        border-radius: 3px;
-        padding: 3px 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
         cursor: pointer;
-        font-size: 11px;
+        margin-bottom: 10px;
       }
 
       .delete-text:hover {
-        background: #c82333;
+        background-color: #991b1b;
       }
     </style>
   </head>
   <body>
     <div class="header">
-      <h1>🎭 QuickMeme</h1>
+      <h1>QuickMeme</h1>
     </div>
 
-    <div class="url-section">
-      <input type="url" id="imageUrl" placeholder="Paste image URL here..." />
-      <button id="loadImage">Load Image</button>
-      <button class="download-btn" id="downloadMeme">Download Meme</button>
+    <div class="toolbar">
+      <input type="url" id="imageUrl" placeholder="Paste image URL..." />
+      <button id="loadImage">Load</button>
+      <button id="addText">Add Text</button>
+      <button id="downloadMeme">Download</button>
     </div>
 
     <div class="canvas-container">
@@ -204,20 +164,16 @@
     </div>
 
     <div class="controls">
-      <button class="add-text-btn" id="addText">+ Add Text</button>
-
       <div id="textEditor" style="display: none">
+        <button id="deleteTextBtn" class="delete-text">Delete Text</button>
+
         <div class="control-group">
-          <label>Text:</label>
+          <label>Text</label>
           <input type="text" id="editorText" />
         </div>
 
         <div class="control-group">
-          <button id="deleteTextBtn" class="delete-text">
-            🗑️ Delete This Text
-          </button>
-
-          <label>Font:</label>
+          <label>Font</label>
           <select id="editorFontFamily">
             <option value="Impact, Arial Black, sans-serif">Impact</option>
             <option value="Comic Sans MS, cursive, sans-serif">
@@ -231,22 +187,22 @@
 
         <div class="control-row">
           <div class="control-group">
-            <label>Size:</label>
+            <label>Size</label>
             <input type="range" min="12" max="80" id="editorFontSize" />
           </div>
           <div class="control-group">
-            <label>Color:</label>
+            <label>Color</label>
             <input type="color" id="editorFill" />
           </div>
         </div>
 
         <div class="control-row">
           <div class="control-group">
-            <label>Outline:</label>
+            <label>Outline</label>
             <input type="color" id="editorStroke" />
           </div>
           <div class="control-group">
-            <label>Outline Width:</label>
+            <label>Outline Width</label>
             <input type="range" min="0" max="5" id="editorStrokeWidth" />
           </div>
         </div>
