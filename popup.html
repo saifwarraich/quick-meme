@@ -34,6 +34,7 @@
         display: flex;
         gap: 8px;
         margin-bottom: 14px;
+        flex-wrap: wrap;
       }
 
       .toolbar input[type="url"] {
@@ -44,6 +45,7 @@
         border-radius: 6px;
         padding: 8px;
         font-size: 14px;
+        min-width: 200px;
       }
 
       .toolbar button {
@@ -62,6 +64,43 @@
         background-color: #cfcfd0;
       }
 
+      .banner-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background-color: #18181b;
+        border: 1px solid #3f3f46;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-size: 13px;
+      }
+
+      .banner-controls label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .banner-controls input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+      }
+
+      .banner-controls input[type="range"] {
+        width: 120px;
+      }
+
+      .banner-controls input[type="color"] {
+        width: 40px;
+        height: 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
       .canvas-container {
         background-color: #18181b;
         border: 1px solid #3f3f46;
@@ -71,6 +110,7 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 12px;
+        overflow: auto;
       }
 
       #memeCanvas {
@@ -171,6 +211,28 @@
       <button id="loadImage">Load</button>
       <button id="addText">Add Text</button>
       <button id="downloadMeme">Download</button>
+    </div>
+
+    <div class="banner-controls">
+      <label>
+        <input type="checkbox" id="enableBanner" />
+        Add Top White Banner
+      </label>
+      <label>
+        Height:
+        <input
+          type="range"
+          id="bannerHeight"
+          min="50"
+          max="200"
+          value="100"
+          disabled
+        />
+      </label>
+      <label>
+        Color:
+        <input type="color" id="bannerColor" value="#ffffff" disabled />
+      </label>
     </div>
 
     <div class="main-content">
