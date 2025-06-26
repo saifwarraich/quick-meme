@@ -9,8 +9,8 @@
       }
 
       body {
-        width: 500px;
-        height: 650px;
+        width: 700px;
+        height: fit-content;
         margin: 0;
         padding: 16px;
         font-family: "Inter", sans-serif;
@@ -66,7 +66,7 @@
         background-color: #18181b;
         border: 1px solid #3f3f46;
         border-radius: 8px;
-        height: 300px;
+        height: 400px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -142,6 +142,23 @@
       .delete-text:hover {
         background-color: #991b1b;
       }
+
+      .main-content {
+        display: flex;
+        gap: 16px;
+        height: 100%;
+      }
+
+      .controls {
+        width: 200px;
+        flex-shrink: 0;
+        overflow-y: auto;
+        max-height: 400px;
+      }
+      .canvas-container {
+        flex: 1;
+        min-width: 0;
+      }
     </style>
   </head>
   <body>
@@ -156,55 +173,57 @@
       <button id="downloadMeme">Download</button>
     </div>
 
-    <div class="canvas-container">
-      <canvas id="memeCanvas" style="display: none"></canvas>
-      <div id="loadingText" class="loading">
-        Load an image to start creating memes!
+    <div class="main-content">
+      <div class="controls">
+        <div id="textEditor" style="display: none">
+          <button id="deleteTextBtn" class="delete-text">Delete Text</button>
+
+          <div class="control-group">
+            <label>Text</label>
+            <input type="text" id="editorText" />
+          </div>
+
+          <div class="control-group">
+            <label>Font</label>
+            <select id="editorFontFamily">
+              <option value="Impact, Arial Black, sans-serif">Impact</option>
+              <option value="Comic Sans MS, cursive, sans-serif">
+                Comic Sans
+              </option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Courier New, monospace">Courier New</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <div class="control-group">
+              <label>Size</label>
+              <input type="range" min="12" max="80" id="editorFontSize" />
+            </div>
+            <div class="control-group">
+              <label>Color</label>
+              <input type="color" id="editorFill" />
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-group">
+              <label>Outline</label>
+              <input type="color" id="editorStroke" />
+            </div>
+            <div class="control-group">
+              <label>Outline Width</label>
+              <input type="range" min="0" max="5" id="editorStrokeWidth" />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="controls">
-      <div id="textEditor" style="display: none">
-        <button id="deleteTextBtn" class="delete-text">Delete Text</button>
-
-        <div class="control-group">
-          <label>Text</label>
-          <input type="text" id="editorText" />
-        </div>
-
-        <div class="control-group">
-          <label>Font</label>
-          <select id="editorFontFamily">
-            <option value="Impact, Arial Black, sans-serif">Impact</option>
-            <option value="Comic Sans MS, cursive, sans-serif">
-              Comic Sans
-            </option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="Courier New, monospace">Courier New</option>
-          </select>
-        </div>
-
-        <div class="control-row">
-          <div class="control-group">
-            <label>Size</label>
-            <input type="range" min="12" max="80" id="editorFontSize" />
-          </div>
-          <div class="control-group">
-            <label>Color</label>
-            <input type="color" id="editorFill" />
-          </div>
-        </div>
-
-        <div class="control-row">
-          <div class="control-group">
-            <label>Outline</label>
-            <input type="color" id="editorStroke" />
-          </div>
-          <div class="control-group">
-            <label>Outline Width</label>
-            <input type="range" min="0" max="5" id="editorStrokeWidth" />
-          </div>
+      <div class="canvas-container">
+        <canvas id="memeCanvas" style="display: none"></canvas>
+        <div id="loadingText" class="loading">
+          Load an image to start creating memes!
         </div>
       </div>
     </div>
