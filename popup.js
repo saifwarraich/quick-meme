@@ -13,6 +13,11 @@ class QuickMeme {
     this.dragOffset = { x: 0, y: 0 };
     this.resizeHandle = null;
 
+    // Banner properties
+    this.bannerEnabled = false;
+    this.bannerHeight = 100;
+    this.bannerColor = "#ffffff";
+
     this.init();
   }
 
@@ -21,9 +26,11 @@ class QuickMeme {
     this.ctx = this.canvas.getContext("2d");
 
     this.setupEventListeners();
+    this.setupBannerControls();
 
     this.checkStoredImage();
 
+    // Text editor event listeners
     document.getElementById("editorText").addEventListener("input", (e) => {
       this.updateText(this.selectedTextId, "text", e.target.value);
     });
@@ -68,6 +75,65 @@ class QuickMeme {
       });
   }
 
+  setupBannerControls() {
+    const enableBanner = document.getElementById("enableBanner");
+    const bannerHeight = document.getElementById("bannerHeight");
+    const bannerColor = document.getElementById("bannerColor");
+
+    enableBanner.addEventListener("change", (e) => {
+      this.bannerEnabled = e.target.checked;
+      bannerHeight.disabled = !this.bannerEnabled;
+      bannerColor.disabled = !this.bannerEnabled;
+
+      if (this.bannerEnabled) {
+        // Adjust existing text positions when banner is enabled
+        this.adjustTextPositionsForBanner(true);
+      } else {
+        // Adjust text positions back when banner is disabled
+        this.adjustTextPositionsForBanner(false);
+      }
+
+      this.updateCanvasSize();
+      this.redraw();
+    });
+
+    bannerHeight.addEventListener("input", (e) => {
+      const oldHeight = this.bannerHeight;
+      this.bannerHeight = parseInt(e.target.value);
+
+      // Adjust text positions based on height change
+      const heightDiff = this.bannerHeight - oldHeight;
+      this.textObjects.forEach((textObj) => {
+        if (textObj.y >= oldHeight) {
+          // Only adjust texts that were below the old banner
+          textObj.y += heightDiff;
+        }
+      });
+
+      this.updateCanvasSize();
+      this.redraw();
+    });
+
+    bannerColor.addEventListener("input", (e) => {
+      this.bannerColor = e.target.value;
+      this.redraw();
+    });
+  }
+
+  adjustTextPositionsForBanner(enable) {
+    if (enable) {
+      // Move texts down to account for banner
+      this.textObjects.forEach((textObj) => {
+        textObj.y += this.bannerHeight;
+      });
+    } else {
+      // Move texts back up
+      this.textObjects.forEach((textObj) => {
+        textObj.y = Math.max(0, textObj.y - this.bannerHeight);
+      });
+    }
+  }
+
   setupEventListeners() {
     document.getElementById("loadImage").addEventListener("click", () => {
       const url = document.getElementById("imageUrl").value.trim();
@@ -107,8 +173,21 @@ class QuickMeme {
           await this.loadImage(state.imageUrl);
           this.textObjects = state.textObjects || [];
           this.selectedTextId = state.selectedTextId || null;
+          this.bannerEnabled = state.bannerEnabled || false;
+          this.bannerHeight = state.bannerHeight || 100;
+          this.bannerColor = state.bannerColor || "#ffffff";
+
+          // Update UI controls
+          document.getElementById("enableBanner").checked = this.bannerEnabled;
+          document.getElementById("bannerHeight").value = this.bannerHeight;
+          document.getElementById("bannerColor").value = this.bannerColor;
+          document.getElementById("bannerHeight").disabled =
+            !this.bannerEnabled;
+          document.getElementById("bannerColor").disabled = !this.bannerEnabled;
+
           document.getElementById("imageUrl").value = state.imageUrl;
 
+          this.updateCanvasSize();
           this.redraw();
           if (this.selectedTextId) {
             this.selectText(this.selectedTextId);
@@ -136,27 +215,7 @@ class QuickMeme {
         this.originalImageHeight = img.height;
         this.backgroundImage = img;
 
-        const maxWidth = 470;
-        const maxHeight = 300;
-        let canvasWidth = img.width;
-        let canvasHeight = img.height;
-
-        if (canvasWidth > maxWidth) {
-          const ratio = maxWidth / canvasWidth;
-          canvasWidth = maxWidth;
-          canvasHeight = canvasHeight * ratio;
-        }
-
-        if (canvasHeight > maxHeight) {
-          const ratio = maxHeight / canvasHeight;
-          canvasHeight = maxHeight;
-          canvasWidth = canvasWidth * ratio;
-        }
-
-        this.canvas.width = canvasWidth;
-        this.canvas.height = canvasHeight;
-        this.canvas.style.width = canvasWidth + "px";
-        this.canvas.style.height = canvasHeight + "px";
+        this.updateCanvasSize();
 
         this.redraw();
 
@@ -176,19 +235,58 @@ class QuickMeme {
     }
   }
 
+  updateCanvasSize() {
+    if (!this.backgroundImage) return;
+
+    const maxWidth = 470;
+    const maxHeight = 350;
+
+    // Calculate image dimensions
+    let imageWidth = this.originalImageWidth;
+    let imageHeight = this.originalImageHeight;
+
+    // Scale image to fit within max dimensions
+    if (imageWidth > maxWidth) {
+      const ratio = maxWidth / imageWidth;
+      imageWidth = maxWidth;
+      imageHeight = imageHeight * ratio;
+    }
+
+    if (
+      imageHeight >
+      maxHeight - (this.bannerEnabled ? this.bannerHeight : 0)
+    ) {
+      const availableHeight =
+        maxHeight - (this.bannerEnabled ? this.bannerHeight : 0);
+      const ratio = availableHeight / imageHeight;
+      imageHeight = availableHeight;
+      imageWidth = imageWidth * ratio;
+    }
+
+    // Set canvas dimensions
+    this.canvas.width = imageWidth;
+    this.canvas.height =
+      imageHeight + (this.bannerEnabled ? this.bannerHeight : 0);
+    this.canvas.style.width = this.canvas.width + "px";
+    this.canvas.style.height = this.canvas.height + "px";
+  }
+
   addText() {
     this.textCounter++;
     const textId = "text_" + this.textCounter;
+
+    // Position text in banner area if banner is enabled, otherwise default position
+    const defaultY = this.bannerEnabled ? this.bannerHeight / 2 - 25 : 50;
 
     const textObj = {
       id: textId,
       text: "Your text here",
       x: 50,
-      y: 50,
+      y: defaultY,
       fontSize: 40,
       fontFamily: "Impact, Arial Black, sans-serif",
-      fill: "#ffffff",
-      stroke: "#000000",
+      fill: this.bannerEnabled ? "#000000" : "#ffffff", // Black text for white banner
+      stroke: this.bannerEnabled ? "#ffffff" : "#000000", // White outline for banner
       strokeWidth: 2,
       width: 200,
       height: 50,
@@ -285,12 +383,23 @@ class QuickMeme {
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Draw banner if enabled
+    if (this.bannerEnabled) {
+      this.ctx.fillStyle = this.bannerColor;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.bannerHeight);
+    }
+
+    // Draw the image below the banner
+    const imageY = this.bannerEnabled ? this.bannerHeight : 0;
+    const imageHeight =
+      this.canvas.height - (this.bannerEnabled ? this.bannerHeight : 0);
+
     this.ctx.drawImage(
       this.backgroundImage,
       0,
-      0,
+      imageY,
       this.canvas.width,
-      this.canvas.height
+      imageHeight
     );
 
     this.textObjects.forEach((textObj) => {
@@ -429,8 +538,20 @@ class QuickMeme {
       selectedText.height = newHeight;
       this.redraw();
     } else if (this.isDragging && selectedText) {
-      selectedText.x = pos.x - this.dragOffset.x;
-      selectedText.y = pos.y - this.dragOffset.y;
+      selectedText.x = Math.max(
+        0,
+        Math.min(
+          this.canvas.width - selectedText.width,
+          pos.x - this.dragOffset.x
+        )
+      );
+      selectedText.y = Math.max(
+        0,
+        Math.min(
+          this.canvas.height - selectedText.height,
+          pos.y - this.dragOffset.y
+        )
+      );
       this.redraw();
     } else {
       let cursor = "default";
@@ -459,20 +580,34 @@ class QuickMeme {
     const tempCanvas = document.createElement("canvas");
     const tempCtx = tempCanvas.getContext("2d");
 
+    // Use original image dimensions plus banner height
+    const bannerHeightScaled = this.bannerEnabled
+      ? this.bannerHeight * (this.originalImageWidth / this.canvas.width)
+      : 0;
     tempCanvas.width = this.originalImageWidth;
-    tempCanvas.height = this.originalImageHeight;
+    tempCanvas.height = this.originalImageHeight + bannerHeightScaled;
 
     const scaleX = this.originalImageWidth / this.canvas.width;
-    const scaleY = this.originalImageHeight / this.canvas.height;
+    const scaleY =
+      this.originalImageHeight /
+      (this.canvas.height - (this.bannerEnabled ? this.bannerHeight : 0));
 
+    // Draw banner if enabled
+    if (this.bannerEnabled) {
+      tempCtx.fillStyle = this.bannerColor;
+      tempCtx.fillRect(0, 0, tempCanvas.width, bannerHeightScaled);
+    }
+
+    // Draw the original image at full resolution
     tempCtx.drawImage(
       this.backgroundImage,
       0,
-      0,
+      bannerHeightScaled,
       this.originalImageWidth,
       this.originalImageHeight
     );
 
+    // Draw text objects scaled to original resolution
     this.textObjects.forEach((textObj) => {
       tempCtx.save();
 
@@ -482,7 +617,11 @@ class QuickMeme {
       tempCtx.textBaseline = "middle";
 
       const scaledX = (textObj.x + textObj.width / 2) * scaleX;
-      const scaledY = (textObj.y + textObj.height / 2) * scaleY;
+      const scaledY =
+        (textObj.y + textObj.height / 2) *
+        (this.bannerEnabled
+          ? (bannerHeightScaled + this.originalImageHeight) / this.canvas.height
+          : scaleY);
 
       if (textObj.strokeWidth > 0) {
         tempCtx.strokeStyle = textObj.stroke;
