@@ -137,6 +137,10 @@ class QuickMeme {
       this.addText();
     });
 
+    document.getElementById("copyToClipboard").addEventListener("click", () => {
+      this.copyToClipboard();
+    });
+
     document.getElementById("downloadMeme").addEventListener("click", () => {
       this.downloadMeme();
     });
@@ -619,6 +623,97 @@ class QuickMeme {
     link.download = "quickmeme_" + Date.now() + ".png";
     link.href = tempCanvas.toDataURL("image/png");
     link.click();
+  }
+
+  async copyToClipboard() {
+    if (!this.backgroundImage) return;
+
+    const tempCanvas = document.createElement("canvas");
+    const tempCtx = tempCanvas.getContext("2d");
+
+    const bannerHeightScaled = this.bannerEnabled
+      ? this.bannerHeight * (this.originalImageWidth / this.canvas.width)
+      : 0;
+    tempCanvas.width = this.originalImageWidth;
+    tempCanvas.height = this.originalImageHeight + bannerHeightScaled;
+
+    const scaleX = this.originalImageWidth / this.canvas.width;
+    const scaleY =
+      this.originalImageHeight /
+      (this.canvas.height - (this.bannerEnabled ? this.bannerHeight : 0));
+
+    if (this.bannerEnabled) {
+      tempCtx.fillStyle = this.bannerColor;
+      tempCtx.fillRect(0, 0, tempCanvas.width, bannerHeightScaled);
+    }
+
+    tempCtx.drawImage(
+      this.backgroundImage,
+      0,
+      bannerHeightScaled,
+      this.originalImageWidth,
+      this.originalImageHeight
+    );
+
+    this.textObjects.forEach((textObj) => {
+      tempCtx.save();
+
+      const scaledFontSize = textObj.fontSize * Math.min(scaleX, scaleY);
+      tempCtx.font = `bold ${scaledFontSize}px ${textObj.fontFamily}`;
+      tempCtx.textAlign = "center";
+      tempCtx.textBaseline = "middle";
+
+      const scaledX = (textObj.x + textObj.width / 2) * scaleX;
+      const scaledY =
+        (textObj.y + textObj.height / 2) *
+        (this.bannerEnabled
+          ? (bannerHeightScaled + this.originalImageHeight) / this.canvas.height
+          : scaleY);
+
+      if (textObj.strokeWidth > 0) {
+        tempCtx.strokeStyle = textObj.stroke;
+        tempCtx.lineWidth = textObj.strokeWidth * Math.min(scaleX, scaleY);
+        tempCtx.strokeText(textObj.text, scaledX, scaledY);
+      }
+
+      tempCtx.fillStyle = textObj.fill;
+      tempCtx.fillText(textObj.text, scaledX, scaledY);
+
+      tempCtx.restore();
+    });
+
+    try {
+      tempCanvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": blob }),
+            ]);
+            // Show a brief success message (optional - could add a toast notification)
+            const button = document.getElementById("copyToClipboard");
+            const originalText = button.textContent;
+            button.textContent = "Copied";
+            button.disabled = true;
+            button.style.cursor = "not-allowed";
+            button.style.color = "#e4e4e7";
+            button.style.backgroundColor = "#10b981";
+            setTimeout(() => {
+              button.textContent = originalText;
+              button.style.backgroundColor = "#e4e4e7";
+              button.disabled = false;
+              button.style.cursor = "pointer";
+              button.style.color = "black";
+            }, 2000);
+          } catch (err) {
+            console.error("Failed to copy to clipboard:", err);
+            alert("Failed to copy to clipboard. Please try again.");
+          }
+        }
+      }, "image/png");
+    } catch (error) {
+      console.error("Error creating blob:", error);
+      alert("Failed to copy to clipboard. Please try again.");
+    }
   }
 
   saveState() {
